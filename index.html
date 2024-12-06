@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ChatGPT Interface</title>
+  <style>
+    /* Add these styles to your existing CSS */
+    nav {
+      background-color: #333; /* Background color */
+      overflow: hidden;
+    }
+
+    nav ul {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    nav li {
+      float: left;
+    }
+
+    nav a {
+      display: block;
+      color: white; /* Text color */
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+    }
+
+    nav a:hover {
+      background-color: #ddd; /* Hover background color */
+      color: black;
+    }
+
+    .chat-container {
+      width: 400px;
+      height: 600px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .message {
+      background-color: #f1f1f1;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    .user-message {
+      background-color: #d3e5f8;
+      align-self: flex-start;
+    }
+
+    .assistant-message {
+      background-color: #e8e8e8;
+      align-self: flex-end;
+    }
+
+    .input-container {
+      display: flex;
+      margin-top: 20px;
+    }
+
+    .input {
+      flex-grow: 1;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      margin-right: 10px;
+    }
+
+    .send-button {
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      background-color: #4caf50;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="#">Home</a></li>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+  </nav>
+  <div class="chat-container">
+    <div class="message user-message">Hello?</div>
+    <div class="message assistant-message">I'm here to help! What do you need?</div>
+  </div>
+  <div class="input-container">
+    <input type="text" id="user-input"class="input" placeholder="Type your message..." />
+    <button class="send-button" onclick="sendMessage()">Send</button>
+  </div>
+  <script>
+    // Define the sendMessage function globally
+    function sendMessage() {
+      var userInput = document.querySelector("#user-input").value;
+      console.log("user-input:", userInput);
+
+      appendMessage("user", userInput);
+
+      fetch('http://localhost:12302/send-message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ "message": userInput }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log("Response from server:", data);
+        appendMessage("assistant", data.message);
+        document.querySelector("#user-input").value = "";
+      })
+      .catch(error => console.error("Error in fetch:", error));
+    }
+
+    // Define the appendMessage function globally
+    function appendMessage(role, content) {
+      var chatContainer = document.querySelector(".chat-container");
+      if (!chatContainer) {
+        console.error("Chat container not found");
+        return;
+      }
+
+      var messageDiv = document.createElement("div");
+      messageDiv.className = "message " + role + "-message";
+      messageDiv.innerHTML = content;
+
+      chatContainer.appendChild(messageDiv);
+    }
+
+    // Add this event listener to make sure the DOM is loaded before attaching the function to the button
+    document.addEventListener("DOMContentLoaded", function() {
+      // Attach the sendMessage function to the button
+      document.querySelector(".send-button").onclick = sendMessage;
+    });
+  </script>
+
+
+</body>
+</html>
